@@ -8,6 +8,10 @@ use std::{
 const FILE_NAME: &str = "todo.txt";
 const FORBIDDEN: &[&str] = &["learn php"];
 
+//
+// ERRORS DECLARATIONS
+//
+
 enum AddError {
     UserInput(UserInputError),
     Internal(InternalError),
@@ -70,28 +74,46 @@ impl From<io::Error> for InternalError {
 impl Display for InternalError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            InternalError::Io(err) => f.write_fmt(format_args!("💾 Disk error: {err}")),
+            InternalError::Io(err) => f.write_fmt(format_args!("💾 Disk error: '{err}'")),
         }
     }
 }
 
-fn main() -> Result<(), AddError> {
-    let args: Vec<String> = env::args().skip(1).collect();
-    let mut file = OpenOptions::new()
-        .append(true)
-        .open(FILE_NAME)
-        .map_err(InternalError::from)?;
+//
+// BUSINESS CODE
+//
 
+fn check_user_input(args: &[String]) -> Result<(), UserInputError> {
     for arg in args {
         for forbidden in FORBIDDEN {
             if arg.to_ascii_lowercase().contains(forbidden) {
-                return Err(AddError::UserInput(UserInputError::ForbiddenValue(
-                    forbidden.to_string(),
-                )));
+                return Err(UserInputError::ForbiddenValue(forbidden.to_string()));
             }
         }
+    }
 
-        writeln!(file, "[ ] {}", arg).map_err(InternalError::from)?;
+    Ok(())
+}
+
+// AddError will be displayed through the `impl Display`
+fn main() -> Result<(), AddError> {
+    let args: Vec<String> = env::args().skip(1).collect();
+    // check_user_input return a `UserInputError` which is automatically
+    // qualified into `AddError` by the `?`
+    check_user_input(&args)?;
+
+    let mut file = OpenOptions::new()
+        .append(true)
+        .open(FILE_NAME)
+        // Qualify `io::Error` into ou business context error
+        // which is itself qualified into `AddError` by the `?`
+        .map_err(InternalError::from)?;
+
+    for arg in args {
+        writeln!(file, "[ ] {}", arg)
+            // Qualify `io::Error` into ou business context error
+            // which is itself qualified into `AddError` by the `?`
+            .map_err(InternalError::from)?;
     }
 
     Ok(())
