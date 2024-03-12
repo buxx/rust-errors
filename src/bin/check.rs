@@ -65,6 +65,23 @@ fn check_user_input(lines: &[&str], args: &[String]) -> Result<(), UserInputErro
     Ok(())
 }
 
+fn check_lines(lines: &[&str], args: &[String]) -> Vec<String> {
+    let mut new_lines: Vec<String> = vec![];
+
+    for line in lines {
+        for arg in args {
+            if line_match(line, arg) {
+                let task = &line[4..];
+                new_lines.push(format!("[x] {}", task));
+            } else {
+                new_lines.push(line.to_string())
+            }
+        }
+    }
+
+    new_lines
+}
+
 fn main() -> Result<(), CheckError> {
     let args: Vec<String> = env::args().skip(1).collect();
     let mut file_content = String::new();
@@ -82,17 +99,7 @@ fn main() -> Result<(), CheckError> {
     // qualified into `CheckError` by the `?`
     check_user_input(&lines, &args)?;
 
-    let mut new_lines: Vec<String> = vec![];
-    for line in lines {
-        for arg in &args {
-            if line_match(line, arg) {
-                let task = &line[4..];
-                new_lines.push(format!("[x] {}", task));
-            } else {
-                new_lines.push(line.to_string())
-            }
-        }
-    }
+    let new_lines = check_lines(&lines, &args);
 
     OpenOptions::new()
         .write(true)
