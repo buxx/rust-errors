@@ -38,13 +38,6 @@ impl From<InternalError> for AddError {
     }
 }
 
-// This impl ensure main function to display the Display impl instead Debug
-impl Debug for AddError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&self.to_string())
-    }
-}
-
 #[derive(Debug)]
 enum UserInputError {
     ForbiddenValue(String),
@@ -117,4 +110,16 @@ fn main() -> Result<(), AddError> {
     }
 
     Ok(())
+}
+
+//
+//
+//
+//
+//
+// This impl ensure main function to display the Display impl instead Debug
+impl Debug for AddError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.to_string())
+    }
 }

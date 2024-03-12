@@ -21,13 +21,6 @@ enum CheckError {
     Internal(#[from] InternalError),
 }
 
-// This impl ensure main function to display the Display impl instead Debug
-impl Debug for CheckError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&self.to_string())
-    }
-}
-
 #[derive(Debug, Error)]
 enum UserInputError {
     #[error("❓ Unknown task '{0}'")]
@@ -113,4 +106,16 @@ fn main() -> Result<(), CheckError> {
         .map_err(InternalError::from)?;
 
     Ok(())
+}
+
+//
+//
+//
+//
+//
+// This impl ensure main function to display the Display impl instead Debug
+impl Debug for CheckError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.to_string())
+    }
 }
